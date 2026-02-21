@@ -23,4 +23,9 @@ public class RegisterRequest {
     @Size(min = 6, message = "La contraseña deben ser almenos 6 caracteres")
     private String password;
     private User.Role role = User.Role.CLIENT;
+
+    private String phone;
+    private String address;
+    private String city;
+    private String country;
 }

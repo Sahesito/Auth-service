@@ -9,6 +9,7 @@ import sahe.com.authservice.client.UserClient;
 import sahe.com.authservice.dto.AuthResponse;
 import sahe.com.authservice.dto.LoginRequest;
 import sahe.com.authservice.dto.RegisterRequest;
+import sahe.com.authservice.dto.UserRequest;
 import sahe.com.authservice.model.User;
 import sahe.com.authservice.repository.UserRepository;
 import sahe.com.authservice.security.JwtUtils;
@@ -44,12 +45,10 @@ public class AuthService {
 
     /* Registro */
     public AuthResponse register(RegisterRequest request) {
-        // Verificar si el email ya existe
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Correo ya registrado");
         }
 
-        // Crear usuario en Auth Service
         User user = new User();
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
@@ -60,13 +59,24 @@ public class AuthService {
         User savedUser = userRepository.save(user);
         log.info("Usuario registrado Auth Service: {}", savedUser.getEmail());
 
-        // Llamar a User Service para crear el perfil
         try {
-            userClient.createUserFromAuth(request);
+            UserRequest userRequest = new UserRequest();
+            userRequest.setFirstName(request.getFirstName());
+            userRequest.setLastName(request.getLastName());
+            userRequest.setEmail(request.getEmail());
+            userRequest.setRole(request.getRole().name());
+            userRequest.setActive(true);
+            userRequest.setPhone(request.getPhone());
+            userRequest.setAddress(request.getAddress());
+            userRequest.setCity(request.getCity());
+            userRequest.setCountry(request.getCountry());
+
+            userClient.createUserFromAuth(userRequest);
             log.info("Usuario creado en User Service: {}", savedUser.getEmail());
         } catch (Exception e) {
             log.error("Error al crear el usuario en user service: {}", e.getMessage());
         }
+
         String token = jwtUtils.generateToken(savedUser.getEmail(), savedUser.getRole().name());
         return new AuthResponse(token, savedUser);
     }
