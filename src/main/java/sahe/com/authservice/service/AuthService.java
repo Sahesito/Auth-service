@@ -46,6 +46,12 @@ public class AuthService {
     /* Registro */
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
+            User existingUser = userRepository.findByEmail(request.getEmail()).get();
+
+            if (Boolean.FALSE.equals(existingUser.getActive())) {
+                throw new RuntimeException("Esta cuenta está desactivada. Contacta al administrador.");
+            }
+
             throw new RuntimeException("Correo ya registrado");
         }
 
@@ -55,6 +61,7 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
+        user.setActive(true);
 
         User savedUser = userRepository.save(user);
         log.info("Usuario registrado Auth Service: {}", savedUser.getEmail());
@@ -91,5 +98,13 @@ public class AuthService {
         String email = jwtUtils.getEmailFromToken(token);
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    public void setUserActive(String email, boolean active) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + email));
+        user.setActive(active);
+        userRepository.save(user);
+        log.info("Usuario {} {} en auth-service", email, active ? "activado" : "desactivado");
     }
 }

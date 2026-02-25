@@ -50,4 +50,16 @@ public class AuthController {
         User user = authService.getCurrentUser(token);
         return ResponseEntity.ok(user);
     }
+
+    @PutMapping("/users/email/{email}/deactivate")
+    public ResponseEntity<Void> deactivateUser(@PathVariable String email) {
+        authService.setUserActive(email, false);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/users/email/{email}/activate")
+    public ResponseEntity<Void> activateUser(@PathVariable String email) {
+        authService.setUserActive(email, true);
+        return ResponseEntity.ok().build();
+    }
 }
