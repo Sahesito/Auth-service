@@ -23,7 +23,7 @@ public class AuthController {
     // POST http://localhost:8081/auth/login
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
-        log.info("Intento de Inicio de sesión de: {}", loginRequest.getEmail());
+        log.info("Login attempt: {}", loginRequest.getEmail());
         AuthResponse response = authService.login(loginRequest);
         return ResponseEntity.ok(response);
     }

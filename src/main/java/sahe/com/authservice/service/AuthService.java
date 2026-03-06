@@ -24,35 +24,33 @@ public class AuthService {
     private final JwtUtils jwtUtils;
     private final UserClient userClient;
 
-    /* Login */
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Credenciales invalidas");
+            throw new RuntimeException("Invalid credentials");
         }
 
         if (!user.getActive()) {
-            throw new RuntimeException("Usuario deshabilitado");
+            throw new RuntimeException("User disabled");
         }
 
         String token = jwtUtils.generateToken(user.getEmail(), user.getRole().name());
 
-        log.info("Usuario logeado correctamente: {}", user.getEmail());
+        log.info("User logged in correctly: {}", user.getEmail());
         return new AuthResponse(token, user);
     }
 
-    /* Registro */
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             User existingUser = userRepository.findByEmail(request.getEmail()).get();
 
             if (Boolean.FALSE.equals(existingUser.getActive())) {
-                throw new RuntimeException("Esta cuenta está desactivada. Contacta al administrador.");
+                throw new RuntimeException("This account is deactivated. Contact the administrator.");
             }
 
-            throw new RuntimeException("Correo ya registrado");
+            throw new RuntimeException("Email already registered");
         }
 
         User user = new User();
@@ -62,9 +60,8 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
         user.setActive(true);
-
         User savedUser = userRepository.save(user);
-        log.info("Usuario registrado Auth Service: {}", savedUser.getEmail());
+        log.info("Registered User Auth Service: {}", savedUser.getEmail());
 
         try {
             UserRequest userRequest = new UserRequest();
@@ -79,21 +76,19 @@ public class AuthService {
             userRequest.setCountry(request.getCountry());
 
             userClient.createUserFromAuth(userRequest);
-            log.info("Usuario creado en User Service: {}", savedUser.getEmail());
+            log.info("User created in User Service: {}", savedUser.getEmail());
         } catch (Exception e) {
-            log.error("Error al crear el usuario en user service: {}", e.getMessage());
+            log.error("Error creating user in user service: {}", e.getMessage());
         }
 
         String token = jwtUtils.generateToken(savedUser.getEmail(), savedUser.getRole().name());
         return new AuthResponse(token, savedUser);
     }
 
-    /* Validar Token */
     public boolean validateToken(String token) {
         return jwtUtils.validateToken(token);
     }
 
-    /* Obtener Usuario Actual*/
     public User getCurrentUser(String token) {
         String email = jwtUtils.getEmailFromToken(token);
         return userRepository.findByEmail(email)
@@ -102,9 +97,9 @@ public class AuthService {
 
     public void setUserActive(String email, boolean active) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + email));
+                .orElseThrow(() -> new RuntimeException("User not found: " + email));
         user.setActive(active);
         userRepository.save(user);
-        log.info("Usuario {} {} en auth-service", email, active ? "activado" : "desactivado");
+        log.info("User {} {} in auth-service", email, active ? "Activate" : "Deactivate");
     }
 }

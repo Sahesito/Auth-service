@@ -9,21 +9,20 @@ import sahe.com.authservice.model.User;
 @Data
 public class RegisterRequest {
 
-    @NotBlank(message = "Nombres requeridos")
+    @NotBlank(message = "Name Required ")
     private String firstName;
 
-    @NotBlank(message = "Apellidos requeridos")
+    @NotBlank(message = "LastName Required")
     private String lastName;
 
-    @NotBlank(message = "Correo requerido")
-    @Email(message = "El correo debe ser valido")
+    @NotBlank(message = "Email required")
+    @Email(message = "The email address must be valid.")
     private String email;
 
-    @NotBlank(message = "Contraseña requerida")
-    @Size(min = 6, message = "La contraseña deben ser almenos 6 caracteres")
+    @NotBlank(message = "Password required")
+    @Size(min = 6, message = "The password must be at least 6 characters long.")
     private String password;
     private User.Role role = User.Role.CLIENT;
-
     private String phone;
     private String address;
     private String city;
